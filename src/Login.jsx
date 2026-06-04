@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import axios from "axios";
 
 function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: "",
+    identifier: "",
     password: "",
     rememberMe: false,
   });
@@ -24,8 +25,8 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.email.trim()) {
-      setError("Email is required");
+    if (!formData.identifier.trim()) {
+      setError("Email or Phone is required");
       return;
     }
 
@@ -35,13 +36,31 @@ function Login() {
     }
 
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        formData
+      );
+      console.log("Login successful:", response.data);
+      alert("Login successful");
+      // Store token if needed
+      localStorage.setItem("token", response.data.token);
+      navigate("/dashboard"); // or your dashboard route
+    } catch (error) {
+      console.error("Login error:", error.response?.data);
+      setError(error.response?.data?.message || "Login failed. Please try again.");
+    } finally {
       setLoading(false);
-      console.log("Login attempt:", formData);
-      // Add actual API call here
-    }, 1500);
+    }
   };
+
+  const token = localStorage.getItem("token");
+  const response =  axios.get("http://localhost:5000/api/profile", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  console.log("Profile data:", response.data);
 
   return (
     <div className="flex flex-col bg-gradient-to-tr from-blue-500 to-black justify-center items-center w-full min-h-screen py-4 px-4 sm:py-8">
@@ -68,9 +87,9 @@ function Login() {
             </label>
             <input
               type="text"
-              name="email"
+              name="identifier"
               placeholder="Enter email or phone number"
-              value={formData.email}
+              value={formData.identifier}
               onChange={handleChange}
               className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg bg-blue-500 border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400 text-white placeholder-white/50"
             />

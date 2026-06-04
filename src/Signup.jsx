@@ -1,32 +1,54 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import axios from "axios";
 
 function Signup() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    phone: "",
-    address: "",
+    phoneNumber: "",
+    streetAddress: "",
     city: "",
     state: "",
-    zipCode: "",
+    pinCode: "",
     password: "",
     confirmPassword: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
+    setFormData((prevFormData) => ({
+      ...prevFormData,
       [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Add API call here later
+    
+    // Validate passwords match before sending
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    console.log("Sending data:", formData);
+    
+    try{
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        formData
+      );
+      console.log(response.data);
+      alert("Registration successful");
+      navigate("/login");
+    }catch(error){
+      console.error("Full error response:", error.response?.data);
+      console.error("Error message:", error.response?.data?.message);
+      alert(error.response?.data?.message || "Registration failed");
+    }
+    
   };
 
   return (
@@ -64,9 +86,9 @@ function Signup() {
           </div>
           <input
             type="tel"
-            name="phone"
+            name="phoneNumber"
             placeholder="Phone Number *"
-            value={formData.phone}
+            value={formData.phoneNumber}
             onChange={handleChange}
             required
             className="px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg bg-blue-500 border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -74,9 +96,9 @@ function Signup() {
 
           <input
             type="text"
-            name="address"
+            name="streetAddress"
             placeholder="Street Address *"
-            value={formData.address}
+            value={formData.streetAddress}
             onChange={handleChange}
             required
             className="px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg bg-blue-500 border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -103,9 +125,9 @@ function Signup() {
             />
             <input
               type="text"
-              name="zipCode"
+              name="pinCode"
               placeholder="Zip Code *"
-              value={formData.zipCode}
+              value={formData.pinCode}
               onChange={handleChange}
               required
               className="px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg bg-blue-500 border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
