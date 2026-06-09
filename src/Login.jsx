@@ -36,20 +36,31 @@ function Login() {
     }
 
     setLoading(true);
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        formData
-      );
-      console.log("Login successful:", response.data);
-      alert("Login successful");
-      // Store token if needed
-      localStorage.setItem("token", response.data.token);
-      navigate("/dashboard"); // or your dashboard route
-    } catch (error) {
-      console.error("Login error:", error.response?.data);
-      setError(error.response?.data?.message || "Login failed. Please try again.");
-    } finally {
+   try {
+  const response = await axios.post(
+    "http://localhost:5000/api/auth/login",
+    formData
+  );
+
+  const { token, user } = response.data;
+
+  // Store authentication data
+  localStorage.setItem("token", token);
+  localStorage.setItem("user", JSON.stringify(user));
+
+  console.log("Login successful");
+  console.log("User:", user);
+
+  navigate("/dashboard");
+
+} catch (error) {
+  console.error("Login error:", error.response?.data);
+
+  setError(
+    error.response?.data?.message ||
+    "Login failed. Please try again."
+  );
+}finally {
       setLoading(false);
     }
   };
